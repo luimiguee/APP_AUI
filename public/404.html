@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>StudyFlow - Gestão de Estudos</title>
+    <script>
+      // GitHub Pages: redireciona 404 para index.html para o React Router funcionar
+      // Ajustado para base path /APP_AUI/
+      var basePath = '/APP_AUI';
+      var pathSegmentsToKeep = 1;
+      
+      var l = window.location;
+      var path = l.pathname;
+      
+      // Se o path começa com o base path, remova-o para processar
+      if (path.indexOf(basePath + '/') === 0) {
+        path = path.replace(basePath, '');
+      }
+      
+      var pathname = path.replace(/^\//, '').split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~');
+      var search = l.search.slice(1).replace(/&/g, '~and~');
+      var hash = l.hash;
+      
+      // Redireciona para o index.html com a rota como query string
+      l.replace(
+        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+        basePath + '/?/' + pathname + (search ? '&' + search : '') + hash
+      );
+    </script>
+  </head>
+  <body>
+    <noscript>
+      <p>Redirecionando...</p>
+      <p><a href="/APP_AUI/">Clique aqui se não for redirecionado automaticamente</a></p>
+    </noscript>
+  </body>
+</html>
+

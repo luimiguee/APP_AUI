@@ -27,7 +27,7 @@ function App() {
   // Exemplo: /APP_AUI/ ou /studyflow/
   // Se o repositório for username.github.io, deixe basename vazio
   // Em desenvolvimento, não usa basename (página em branco no localhost)
-  // Em produção, usa o basename para GitHub Pages
+  // Em produção, usa o basename para GitHub Pages (sem barra final no basename do Router)
   const basename = import.meta.env.MODE === 'production' ? '/APP_AUI' : '';
 
   return (
