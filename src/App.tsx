@@ -24,11 +24,15 @@ import { ViewEmails } from './pages/ViewEmails';
 
 function App() {
   // Para GitHub Pages, o base path será o nome do repositório
+  // Detecta se está rodando no GitHub Pages verificando se é produção
   // Exemplo: /APP_AUI/ ou /studyflow/
   // Se o repositório for username.github.io, deixe basename vazio
-  // Em desenvolvimento, não usa basename (página em branco no localhost)
-  // Em produção, usa o basename para GitHub Pages (sem barra final no basename do Router)
-  const basename = import.meta.env.MODE === 'production' ? '/APP_AUI' : '';
+  // Usa apenas import.meta.env.PROD para evitar problemas durante o build
+  const isGitHubPages = import.meta.env.PROD;
+  
+  // Em desenvolvimento local, não usa basename (página em branco no localhost)
+  // Em produção/GitHub Pages, usa o basename para GitHub Pages (sem barra final no basename do Router)
+  const basename = isGitHubPages ? '/APP_AUI' : '';
 
   return (
     <ThemeProvider>
