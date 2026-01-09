@@ -11,7 +11,6 @@
 
 ### 2️⃣ Subir o Código
 ```bash
-cd /Users/miguelpato/APP_AUI
 git init
 git add .
 git commit -m "Initial commit - StudyFlow"

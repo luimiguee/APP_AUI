@@ -26,7 +26,9 @@ function App() {
   // Para GitHub Pages, o base path será o nome do repositório
   // Exemplo: /APP_AUI/ ou /studyflow/
   // Se o repositório for username.github.io, deixe basename vazio
-  const basename = '/APP_AUI'; // Ajuste conforme o nome do seu repositório
+  // Em desenvolvimento, não usa basename (página em branco no localhost)
+  // Em produção, usa o basename para GitHub Pages
+  const basename = import.meta.env.MODE === 'production' ? '/APP_AUI' : '';
 
   return (
     <ThemeProvider>

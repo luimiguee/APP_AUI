@@ -95,6 +95,13 @@ npm run dev
 npm run build
 ```
 
+### 📚 Documentação
+
+Consulte a pasta [`docs/`](./docs/) para guias detalhados:
+- **Hospedar no GitHub Pages:** Veja [`docs/GUIA_GITHUB_PAGES.md`](./docs/GUIA_GITHUB_PAGES.md)
+- **Deploy Rápido:** Veja [`docs/DEPLOY_RAPIDO.md`](./docs/DEPLOY_RAPIDO.md)
+- **Comandos Úteis:** Veja [`docs/COMANDOS_REINICIAR.md`](./docs/COMANDOS_REINICIAR.md)
+
 ## 👥 Credenciais de Demonstração
 
 ### Administrador
@@ -109,14 +116,22 @@ npm run build
 
 ```
 APP_AUI/
-├── src/
+├── src/                  # Código fonte
 │   ├── components/       # Componentes reutilizáveis
 │   ├── context/          # Context API (Auth, Tasks, Settings, ActivityLogs)
 │   ├── pages/            # Páginas da aplicação
 │   ├── services/         # Serviços (email, etc)
 │   ├── types/            # Tipos TypeScript
 │   └── App.tsx           # Componente principal
+├── docs/                 # Documentação do projeto
+│   ├── GUIA_GITHUB_PAGES.md  # Guia completo de deploy
+│   ├── DEPLOY_RAPIDO.md      # Deploy rápido
+│   ├── COMANDOS_REINICIAR.md # Comandos úteis
+│   └── ...               # Outros guias
+├── .github/
+│   └── workflows/        # GitHub Actions workflows
 ├── package.json
+├── vite.config.ts
 └── README.md
 ```
 

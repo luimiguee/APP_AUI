@@ -27,10 +27,7 @@ Este guia vai te ajudar a publicar o StudyFlow no GitHub Pages de forma fácil!
 
 ### **Passo 2: Configurar o Projeto Localmente**
 
-1. **Abra o terminal** na pasta do projeto:
-   ```bash
-   cd /Users/miguelpato/APP_AUI
-   ```
+1. **Abra o terminal** na pasta do projeto (certifique-se de estar na raiz do projeto)
 
 2. **Inicialize Git** (se ainda não foi feito):
    ```bash

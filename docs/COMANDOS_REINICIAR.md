@@ -9,7 +9,6 @@
 
 ### **Iniciar novamente:**
 ```bash
-cd /Users/miguelpato/APP_AUI
 npm run dev
 ```
 
@@ -25,8 +24,6 @@ npm run dev
 
 ### **2. Limpar cache e reinstalar:**
 ```bash
-cd /Users/miguelpato/APP_AUI
-
 # Remover node_modules e lock files
 rm -rf node_modules package-lock.json
 
@@ -43,8 +40,6 @@ npm run dev
 
 ### **Limpar build anterior e reconstruir:**
 ```bash
-cd /Users/miguelpato/APP_AUI
-
 # Remover pasta dist (build anterior)
 rm -rf dist
 

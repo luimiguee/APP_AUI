@@ -258,7 +258,7 @@ export const Landing: React.FC = () => {
           </div>
           <div className="border-t border-gray-700 pt-6 text-center">
             <p className="text-gray-400 text-sm">
-              © 2024 StudyFlow. Todos os direitos reservados.
+              © 2026 StudyFlow. Todos os direitos reservados.
             </p>
           </div>
         </div>
