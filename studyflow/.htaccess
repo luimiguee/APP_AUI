@@ -1,0 +1,25 @@
+# Configuração Apache para StudyFlow API
+# Se usar Nginx, configure rewrite rules similarmente
+
+RewriteEngine On
+
+# Permitir CORS
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type, Authorization"
+</IfModule>
+
+# Roteamento da API
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^api/auth$ api/auth.php [L,QSA]
+RewriteRule ^api/tasks$ api/tasks.php [L,QSA]
+RewriteRule ^api/health$ api/index.php [L,QSA]
+
+# Proteger arquivos sensíveis
+<FilesMatch "\.(env|config|sql)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+

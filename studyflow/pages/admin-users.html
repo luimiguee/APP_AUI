@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestão de Usuários - StudyFlow</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="container">
+      <div class="navbar-content">
+        <a href="../index.html" class="navbar-brand">
+          <div class="navbar-logo">S</div>
+          <span>StudyFlow</span>
+        </a>
+        <nav>
+          <ul class="navbar-nav" id="navbar-menu"></ul>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Page Content -->
+  <div class="page-container">
+    <div class="container">
+      <div class="page-header flex-between">
+        <div>
+          <h1 class="page-title">Gestão de Usuários</h1>
+          <p class="page-subtitle">Gerenciar usuários do sistema</p>
+        </div>
+        <button class="btn btn-primary" onclick="openCreateUserModal()">+ Novo Usuário</button>
+      </div>
+
+      <!-- Alert Container -->
+      <div id="alert-container"></div>
+
+      <!-- Filtros -->
+      <div class="card mb-4">
+        <div class="grid grid-3">
+          <div class="form-group">
+            <label class="form-label">Buscar</label>
+            <input type="text" class="form-input" id="search-input" placeholder="Nome ou email..." onkeyup="filterUsers()">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tipo</label>
+            <select class="form-select" id="role-filter" onchange="filterUsers()">
+              <option value="">Todos</option>
+              <option value="admin">Administrador</option>
+              <option value="estudante">Estudante</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">&nbsp;</label>
+            <button class="btn btn-outline btn-block" onclick="loadUsers()">Atualizar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabela de Usuários -->
+      <div class="card">
+        <div id="users-loading" style="text-align: center; padding: 2rem;">
+          <div class="spinner" style="margin: 0 auto;"></div>
+          <p style="margin-top: 1rem; color: var(--subtext);">Carregando usuários...</p>
+        </div>
+        <div id="users-table" style="display: none;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="border-bottom: 2px solid var(--border);">
+                <th style="padding: 1rem; text-align: left; font-weight: 600;">Nome</th>
+                <th style="padding: 1rem; text-align: left; font-weight: 600;">Email</th>
+                <th style="padding: 1rem; text-align: left; font-weight: 600;">Tipo</th>
+                <th style="padding: 1rem; text-align: left; font-weight: 600;">Tarefas</th>
+                <th style="padding: 1rem; text-align: left; font-weight: 600;">Cadastro</th>
+                <th style="padding: 1rem; text-align: right; font-weight: 600;">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody"></tbody>
+          </table>
+        </div>
+        <div id="users-empty" style="display: none; text-align: center; padding: 3rem;">
+          <p style="color: var(--subtext);">Nenhum usuário encontrado</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Criar/Editar Usuário -->
+  <div id="user-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+    <div class="card" style="max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto;">
+      <div class="flex-between mb-3">
+        <h2 id="modal-title">Novo Usuário</h2>
+        <button onclick="closeUserModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--subtext);">&times;</button>
+      </div>
+      <form id="user-form" onsubmit="saveUser(event)">
+        <div class="form-group">
+          <label class="form-label">Nome</label>
+          <input type="text" class="form-input" id="user-name" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-input" id="user-email" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Senha</label>
+          <input type="password" class="form-input" id="user-password" minlength="6">
+          <small style="color: var(--subtext); font-size: 0.875rem;">Deixe em branco para não alterar (ao editar)</small>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tipo</label>
+          <select class="form-select" id="user-role" required>
+            <option value="estudante">Estudante</option>
+            <option value="admin">Administrador</option>
+          </select>
+        </div>
+        <div class="flex gap-2" style="margin-top: 1.5rem;">
+          <button type="button" class="btn btn-outline btn-block" onclick="closeUserModal()">Cancelar</button>
+          <button type="submit" class="btn btn-primary btn-block" id="save-btn">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="../js/api.js"></script>
+  <script src="../js/admin.js"></script>
+  <script src="../js/utils.js"></script>
+  <script>
+    // Verificar autenticação
+    const currentUser = JSON.parse(localStorage.getItem('studyflow-user') || 'null');
+    if (!currentUser || currentUser.role !== 'admin') {
+      window.location.href = '../login.html';
+    }
+
+    let users = [];
+    let editingUserId = null;
+
+    // Carregar navbar
+    function loadNavbar() {
+      const menu = document.getElementById('navbar-menu');
+      menu.innerHTML = `
+        <li><a href="admin-dashboard.html" class="navbar-link">Dashboard</a></li>
+        <li><a href="admin-users.html" class="navbar-link active">Usuários</a></li>
+        <li><a href="admin-logs.html" class="navbar-link">Logs</a></li>
+        <li><a href="admin-settings.html" class="navbar-link">Configurações</a></li>
+        <li><a href="#" onclick="API.logout(); return false;" class="navbar-link">Sair</a></li>
+      `;
+    }
+
+    // Carregar usuários
+    async function loadUsers() {
+      try {
+        document.getElementById('users-loading').style.display = 'block';
+        document.getElementById('users-table').style.display = 'none';
+        document.getElementById('users-empty').style.display = 'none';
+
+        users = await Admin.loadUsers();
+        displayUsers(users);
+
+        document.getElementById('users-loading').style.display = 'none';
+        if (users.length > 0) {
+          document.getElementById('users-table').style.display = 'block';
+        } else {
+          document.getElementById('users-empty').style.display = 'block';
+        }
+      } catch (error) {
+        console.error('Erro ao carregar usuários:', error);
+        document.getElementById('users-loading').style.display = 'none';
+        Utils.showError('alert-container', 'Erro ao carregar usuários: ' + error.message);
+      }
+    }
+
+    // Exibir usuários
+    function displayUsers(usersList) {
+      const tbody = document.getElementById('users-tbody');
+      tbody.innerHTML = usersList.map(user => `
+        <tr style="border-bottom: 1px solid var(--border);">
+          <td style="padding: 1rem;">${user.name}</td>
+          <td style="padding: 1rem;">${user.email}</td>
+          <td style="padding: 1rem;">
+            <span style="padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 0.875rem; background: ${user.role === 'admin' ? '#FEE2E2' : '#DBEAFE'}; color: ${user.role === 'admin' ? '#991B1B' : '#1E40AF'};">
+              ${Admin.formatRole(user.role)}
+            </span>
+          </td>
+          <td style="padding: 1rem;">${user.task_count || 0}</td>
+          <td style="padding: 1rem;">${Admin.formatDate(user.created_at)}</td>
+          <td style="padding: 1rem; text-align: right;">
+            <button class="btn btn-sm btn-outline" onclick="editUser(${user.id})">Editar</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id})">Deletar</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Filtrar usuários
+    function filterUsers() {
+      const search = document.getElementById('search-input').value.toLowerCase();
+      const roleFilter = document.getElementById('role-filter').value;
+
+      const filtered = users.filter(user => {
+        const matchesSearch = !search || 
+          user.name.toLowerCase().includes(search) || 
+          user.email.toLowerCase().includes(search);
+        const matchesRole = !roleFilter || user.role === roleFilter;
+        return matchesSearch && matchesRole;
+      });
+
+      displayUsers(filtered);
+      document.getElementById('users-table').style.display = filtered.length > 0 ? 'block' : 'none';
+      document.getElementById('users-empty').style.display = filtered.length === 0 ? 'block' : 'none';
+    }
+
+    // Abrir modal criar usuário
+    function openCreateUserModal() {
+      editingUserId = null;
+      document.getElementById('modal-title').textContent = 'Novo Usuário';
+      document.getElementById('user-form').reset();
+      document.getElementById('user-password').required = true;
+      document.getElementById('user-modal').style.display = 'flex';
+    }
+
+    // Editar usuário
+    async function editUser(id) {
+      try {
+        const user = await API.getUser(id);
+        editingUserId = id;
+        document.getElementById('modal-title').textContent = 'Editar Usuário';
+        document.getElementById('user-name').value = user.name;
+        document.getElementById('user-email').value = user.email;
+        document.getElementById('user-role').value = user.role;
+        document.getElementById('user-password').required = false;
+        document.getElementById('user-modal').style.display = 'flex';
+      } catch (error) {
+        console.error('Erro ao carregar usuário:', error);
+        Utils.showError('alert-container', 'Erro ao carregar usuário: ' + error.message);
+      }
+    }
+
+    // Fechar modal
+    function closeUserModal() {
+      document.getElementById('user-modal').style.display = 'none';
+      editingUserId = null;
+      document.getElementById('user-form').reset();
+    }
+
+    // Salvar usuário
+    async function saveUser(event) {
+      event.preventDefault();
+      const saveBtn = document.getElementById('save-btn');
+      saveBtn.disabled = true;
+      saveBtn.textContent = 'Salvando...';
+
+      try {
+        const userData = {
+          name: document.getElementById('user-name').value,
+          email: document.getElementById('user-email').value,
+          role: document.getElementById('user-role').value
+        };
+
+        const password = document.getElementById('user-password').value;
+        if (password) {
+          userData.password = password;
+        }
+
+        if (editingUserId) {
+          await API.updateUser(editingUserId, userData);
+          Utils.showSuccess('alert-container', 'Usuário atualizado com sucesso!');
+        } else {
+          await API.createUser(userData);
+          Utils.showSuccess('alert-container', 'Usuário criado com sucesso!');
+        }
+
+        closeUserModal();
+        loadUsers();
+      } catch (error) {
+        console.error('Erro ao salvar usuário:', error);
+        Utils.showError('alert-container', 'Erro ao salvar usuário: ' + error.message);
+      } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Salvar';
+      }
+    }
+
+    // Deletar usuário
+    async function deleteUser(id) {
+      if (!confirm('Tem certeza que deseja deletar este usuário?')) return;
+
+      try {
+        await API.deleteUser(id);
+        Utils.showSuccess('alert-container', 'Usuário deletado com sucesso!');
+        loadUsers();
+      } catch (error) {
+        console.error('Erro ao deletar usuário:', error);
+        Utils.showError('alert-container', 'Erro ao deletar usuário: ' + error.message);
+      }
+    }
+
+    // Inicializar
+    loadNavbar();
+    loadUsers();
+  </script>
+</body>
+</html>
+

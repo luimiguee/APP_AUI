@@ -1,0 +1,59 @@
+<!-- Navbar Component (será incluído via JavaScript) -->
+<header class="navbar">
+  <div class="container">
+    <div class="navbar-content">
+      <a href="../index.html" class="navbar-brand">
+        <div class="navbar-logo">S</div>
+        <span>StudyFlow</span>
+      </a>
+      <nav>
+        <ul class="navbar-nav" id="navbar-menu">
+          <!-- Será preenchido via JavaScript -->
+        </ul>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<script>
+  // Carregar navbar
+  function loadNavbar() {
+    const user = Auth.getCurrentUser();
+    const menu = document.getElementById('navbar-menu');
+    
+    if (!user) {
+      menu.innerHTML = `
+        <li><a href="../index.html" class="navbar-link">Início</a></li>
+        <li><a href="../login.html" class="navbar-link">Entrar</a></li>
+        <li><a href="../register.html" class="btn btn-primary btn-sm">Registar</a></li>
+      `;
+      return;
+    }
+
+    if (user.role === 'admin') {
+      menu.innerHTML = `
+        <li><a href="../pages/admin-dashboard.html" class="navbar-link">Dashboard</a></li>
+        <li><a href="../pages/admin-users.html" class="navbar-link">Usuários</a></li>
+        <li><a href="../pages/admin-logs.html" class="navbar-link">Logs</a></li>
+        <li><a href="../pages/admin-settings.html" class="navbar-link">Configurações</a></li>
+        <li><a href="#" onclick="Auth.logout(); return false;" class="navbar-link">Sair</a></li>
+      `;
+    } else {
+      menu.innerHTML = `
+        <li><a href="../dashboard.html" class="navbar-link">Dashboard</a></li>
+        <li><a href="../pages/tarefas.html" class="navbar-link">Tarefas</a></li>
+        <li><a href="../pages/calendario.html" class="navbar-link">Calendário</a></li>
+        <li><a href="../pages/perfil.html" class="navbar-link">Perfil</a></li>
+        <li><a href="#" onclick="Auth.logout(); return false;" class="navbar-link">Sair</a></li>
+      `;
+    }
+  }
+
+  // Executar quando o DOM estiver pronto
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadNavbar);
+  } else {
+    loadNavbar();
+  }
+</script>
+

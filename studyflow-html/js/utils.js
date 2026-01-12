@@ -6,11 +6,11 @@ const Utils = {
     const d = new Date(date);
     
     if (format === 'dd/MM/yyyy') {
-      return d.toLocaleDateString('pt-PT');
+      return d.toLocaleDateString('pt-BR');
     }
     
     if (format === 'dd/MM/yyyy HH:mm') {
-      return d.toLocaleString('pt-PT');
+      return d.toLocaleString('pt-BR');
     }
     
     if (format === 'relative') {
