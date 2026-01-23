@@ -36,6 +36,7 @@ if ($path === '/api' || $path === '/api/index.php' || $path === '/api/') {
         'endpoints' => [
             'auth' => '/api/auth.php',
             'tasks' => '/api/tasks.php',
+            'emails' => '/api/emails.php',
             'health' => '/api/health'
         ]
     ]);
@@ -48,4 +49,8 @@ if ($path === '/api' || $path === '/api/index.php' || $path === '/api/') {
 echo json_encode(['message' => 'Use /api/auth.php ou /api/tasks.php']);
 
 ?>
+
+
+
+
 

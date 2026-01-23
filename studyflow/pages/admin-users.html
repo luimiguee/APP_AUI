@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/clean.css">
 </head>
 <body>
   <!-- Navbar -->
@@ -20,6 +21,9 @@
         </a>
         <nav>
           <ul class="navbar-nav" id="navbar-menu"></ul>
+          <button class="theme-toggle" aria-label="Alternar tema" onclick="ThemeManager.toggleTheme()">
+            <span class="theme-icon">🌙</span>
+          </button>
         </nav>
       </div>
     </div>
@@ -67,16 +71,16 @@
           <div class="spinner" style="margin: 0 auto;"></div>
           <p style="margin-top: 1rem; color: var(--subtext);">Carregando usuários...</p>
         </div>
-        <div id="users-table" style="display: none;">
-          <table style="width: 100%; border-collapse: collapse;">
+        <div id="users-table" style="display: none; border-radius: 12px; overflow: hidden;">
+          <table style="width: 100%; border-collapse: separate; border-spacing: 0;">
             <thead>
-              <tr style="border-bottom: 2px solid var(--border);">
-                <th style="padding: 1rem; text-align: left; font-weight: 600;">Nome</th>
-                <th style="padding: 1rem; text-align: left; font-weight: 600;">Email</th>
-                <th style="padding: 1rem; text-align: left; font-weight: 600;">Tipo</th>
-                <th style="padding: 1rem; text-align: left; font-weight: 600;">Tarefas</th>
-                <th style="padding: 1rem; text-align: left; font-weight: 600;">Cadastro</th>
-                <th style="padding: 1rem; text-align: right; font-weight: 600;">Ações</th>
+              <tr style="background: var(--hover-bg);">
+                <th style="padding: 1.25rem 1.5rem; text-align: left; font-weight: 600; font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--subtext);">Nome</th>
+                <th style="padding: 1.25rem 1.5rem; text-align: left; font-weight: 600; font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--subtext);">Email</th>
+                <th style="padding: 1.25rem 1.5rem; text-align: left; font-weight: 600; font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--subtext);">Tipo</th>
+                <th style="padding: 1.25rem 1.5rem; text-align: left; font-weight: 600; font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--subtext);">Tarefas</th>
+                <th style="padding: 1.25rem 1.5rem; text-align: left; font-weight: 600; font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--subtext);">Registo</th>
+                <th style="padding: 1.25rem 1.5rem; text-align: right; font-weight: 600; font-size: 0.8125rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--subtext);">Ações</th>
               </tr>
             </thead>
             <tbody id="users-tbody"></tbody>
@@ -90,7 +94,7 @@
   </div>
 
   <!-- Modal Criar/Editar Usuário -->
-  <div id="user-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+  <div id="user-modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center;">
     <div class="card" style="max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto;">
       <div class="flex-between mb-3">
         <h2 id="modal-title">Novo Usuário</h2>
@@ -125,6 +129,7 @@
     </div>
   </div>
 
+  <script src="../js/theme.js"></script>
   <script src="../js/api.js"></script>
   <script src="../js/admin.js"></script>
   <script src="../js/utils.js"></script>
@@ -227,7 +232,7 @@
       try {
         const user = await API.getUser(id);
         editingUserId = id;
-        document.getElementById('modal-title').textContent = 'Editar Usuário';
+        document.getElementById('modal-title').textContent = 'Editar Utilizador';
         document.getElementById('user-name').value = user.name;
         document.getElementById('user-email').value = user.email;
         document.getElementById('user-role').value = user.role;
@@ -300,6 +305,11 @@
 
     // Inicializar
     loadNavbar();
+    
+    // Atualizar ícone do tema
+    if (typeof ThemeManager !== 'undefined') {
+      ThemeManager.updateThemeToggle();
+    }
     loadUsers();
   </script>
 </body>

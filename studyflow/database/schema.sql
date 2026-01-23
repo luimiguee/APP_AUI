@@ -53,3 +53,7 @@ CREATE TABLE IF NOT EXISTS activity_logs (
 -- Usuários padrão serão inseridos via script PHP (scripts/seed-users.php)
 -- Isso garante que as senhas sejam hasheadas corretamente
 
+
+
+
+

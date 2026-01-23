@@ -1,7 +1,44 @@
 // Serviço de API para comunicação com o backend
 const API = {
   // URL base da API (ajuste conforme necessário)
-  BASE_URL: window.API_URL || 'http://localhost:8000/api',
+  // Detecção automática:
+  // - Se estiver na porta 5500 ou 8080, assume Docker
+  // - Se estiver em localhost sem porta, assume XAMPP (porta 80)
+  // - Caso contrário, usa porta 8000 (servidor PHP integrado)
+  BASE_URL: (function() {
+    // Se API_URL já estiver definido, usar esse
+    if (window.API_URL) {
+      return window.API_URL;
+    }
+    
+    // Detectar URL baseada na localização atual
+    const port = window.location.port || '';
+    const hostname = window.location.hostname || 'localhost';
+    const protocol = window.location.protocol || 'http:';
+    
+    // Se estiver via file:// ou sem protocolo http, usar localhost:5500 (Docker padrão)
+    if (protocol === 'file:' || !window.location.host) {
+      return 'http://localhost:5500/api';
+    }
+    
+    // Se estiver na porta 5500 ou 8080, usar essa porta
+    if (port === '5500' || port === '8080') {
+      return `${protocol}//${hostname}:${port}/api`;
+    }
+    
+    // Se estiver em localhost sem porta especificada, assumir XAMPP
+    if (hostname === 'localhost' && (!port || port === '80' || port === '443')) {
+      return 'http://localhost/studyflow/api';
+    }
+    
+    // Caso contrário, tentar usar a mesma origem
+    if (hostname && port) {
+      return `${protocol}//${hostname}:${port}/api`;
+    }
+    
+    // Fallback: porta 8000 (servidor PHP integrado)
+    return 'http://localhost:8000/api';
+  })(),
 
   // Obter token do localStorage
   getToken() {
@@ -20,16 +57,24 @@ const API = {
 
   // Fazer requisição HTTP
   async request(endpoint, options = {}) {
-    // Se endpoint começar com /admin.php, /auth.php ou /tasks.php, usar diretamente
+    // Construir URL: BASE_URL já inclui /api, então apenas adicionar o endpoint
     let url;
-    if (endpoint.startsWith('/admin.php') || endpoint.startsWith('/auth.php') || endpoint.startsWith('/tasks.php')) {
-      url = `${this.BASE_URL.replace('/api', '')}${endpoint}`;
+    if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
+      // URL completa - usar diretamente
+      url = endpoint;
+    } else if (endpoint.startsWith('/api/')) {
+      // Endpoint já inclui /api/ - usar origem + endpoint
+      url = window.location.origin + endpoint;
     } else {
-      url = `${this.BASE_URL}${endpoint}`;
+      // Endpoint relativo - adicionar à BASE_URL
+      // BASE_URL já deve terminar em /api, então apenas adicionar / antes do endpoint se necessário
+      const cleanEndpoint = endpoint.startsWith('/') ? endpoint : '/' + endpoint;
+      url = this.BASE_URL + cleanEndpoint;
     }
     const token = this.getToken();
 
     const config = {
+      method: options.method || 'GET',
       headers: {
         'Content-Type': 'application/json',
         ...(token && { Authorization: `Bearer ${token}` }),
@@ -38,21 +83,44 @@ const API = {
       ...options
     };
 
+    // Remover body do config se não for necessário
+    if (config.method === 'GET' || config.method === 'DELETE') {
+      delete config.body;
+    }
+
     if (config.body && typeof config.body === 'object') {
       config.body = JSON.stringify(config.body);
     }
 
     try {
+      console.log('API Request:', url, config.method || 'GET'); // Debug
       const response = await fetch(url, config);
-      const data = await response.json();
+      
+      // Verificar se a resposta é JSON
+      const contentType = response.headers.get('content-type');
+      let data;
+      
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        const text = await response.text();
+        console.error('Resposta não é JSON:', text.substring(0, 200));
+        throw new Error(text || `HTTP ${response.status}: ${response.statusText}`);
+      }
 
       if (!response.ok) {
-        throw new Error(data.error || 'Erro na requisição');
+        console.error('Erro na resposta:', data);
+        throw new Error(data.error || data.message || `Erro HTTP ${response.status}`);
       }
 
       return data;
     } catch (error) {
       console.error('Erro na API:', error);
+      console.error('URL tentada:', url);
+      // Se for um erro de rede, dar mensagem mais clara
+      if (error.message === 'Failed to fetch' || error.message.includes('Load failed') || error.name === 'TypeError') {
+        throw new Error(`Erro de conexão. Verifique se o servidor está a correr em ${url.replace('/api', '')} e se a URL da API está correta.`);
+      }
       throw error;
     }
   },

@@ -61,3 +61,7 @@ Acesse: `http://localhost:8000`
 
 Consulte `DATABASE_SETUP_PHP.md` para documentação detalhada.
 
+
+
+
+

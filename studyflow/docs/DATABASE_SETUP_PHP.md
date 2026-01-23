@@ -261,3 +261,7 @@ Se encontrar problemas, verifique:
 3. Network tab do navegador para ver requisições HTTP
 4. Teste a conexão com o banco de dados diretamente
 
+
+
+
+

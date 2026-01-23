@@ -10,11 +10,15 @@
         <ul class="navbar-nav" id="navbar-menu">
           <!-- Será preenchido via JavaScript -->
         </ul>
+        <button class="theme-toggle" aria-label="Alternar tema" onclick="ThemeManager.toggleTheme()">
+          <span class="theme-icon">🌙</span>
+        </button>
       </nav>
     </div>
   </div>
 </header>
 
+<script src="../js/theme.js"></script>
 <script>
   // Carregar navbar
   function loadNavbar() {
@@ -51,9 +55,17 @@
 
   // Executar quando o DOM estiver pronto
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', loadNavbar);
+    document.addEventListener('DOMContentLoaded', () => {
+      loadNavbar();
+      if (typeof ThemeManager !== 'undefined') {
+        ThemeManager.updateThemeToggle();
+      }
+    });
   } else {
     loadNavbar();
+    if (typeof ThemeManager !== 'undefined') {
+      ThemeManager.updateThemeToggle();
+    }
   }
 </script>
 

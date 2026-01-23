@@ -1,6 +1,6 @@
 <?php
-// Configuração de Banco de Dados
-// Este arquivo contém as configurações de conexão com o banco de dados
+// Configuração de Email
+// Este arquivo contém as configurações de email
 
 // Carregar variáveis de ambiente do Docker ou ficheiro .env.php
 if (file_exists(__DIR__ . '/../.env.php')) {
@@ -23,22 +23,18 @@ if (file_exists(__DIR__ . '/../.env')) {
     }
 }
 
-// Configurações do banco de dados
+// Configurações de Email SMTP
 // Prioridade: variável de ambiente > .env > valores padrão
-define('DB_HOST', getenv('DB_HOST') ?: 'localhost');
-define('DB_PORT', getenv('DB_PORT') ?: '3306');
-define('DB_USER', getenv('DB_USER') ?: 'root');
-define('DB_PASSWORD', getenv('DB_PASSWORD') ?: '');
-define('DB_NAME', getenv('DB_NAME') ?: 'studyflow');
-define('DB_CHARSET', 'utf8mb4');
+define('SMTP_HOST', getenv('SMTP_HOST') ?: 'smtp.gmail.com');
+define('SMTP_PORT', getenv('SMTP_PORT') ?: '587');
+define('SMTP_USERNAME', getenv('SMTP_USERNAME') ?: '');
+define('SMTP_PASSWORD', getenv('SMTP_PASSWORD') ?: '');
+define('SMTP_FROM_EMAIL', getenv('SMTP_FROM_EMAIL') ?: 'noreply@studyflow.com');
+define('SMTP_FROM_NAME', getenv('SMTP_FROM_NAME') ?: 'StudyFlow');
+define('SMTP_ENCRYPTION', getenv('SMTP_ENCRYPTION') ?: 'tls'); // 'tls' ou 'ssl'
+define('SMTP_AUTH', getenv('SMTP_AUTH') !== 'false'); // true por padrão
 
-// Configurações da aplicação
-define('JWT_SECRET', getenv('JWT_SECRET') ?: 'seu_secret_jwt_aqui_mude_em_producao');
-define('API_URL', getenv('API_URL') ?: 'http://localhost:8000/api');
+// Para desenvolvimento local, você pode usar mail() do PHP
+define('USE_SMTP', getenv('USE_SMTP') !== 'false'); // true por padrão
 
 ?>
-
-
-
-
-

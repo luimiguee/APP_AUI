@@ -1,6 +1,9 @@
 <?php
 // API de Tarefas
-header('Content-Type: application/json');
+error_reporting(E_ALL);
+ini_set('display_errors', 0); // Não exibir erros, mas logá-los
+
+header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization');
@@ -119,36 +122,81 @@ function handleGetTask($id, $userId) {
 function handleCreateTask($userId) {
     global $db;
     
-    $data = json_decode(file_get_contents('php://input'), true);
-    $title = $data['title'] ?? '';
-    $description = $data['description'] ?? null;
-    $status = $data['status'] ?? 'pendente';
-    $priority = $data['priority'] ?? 'media';
-    $dueDate = $data['due_date'] ?? null;
+    try {
+        $data = json_decode(file_get_contents('php://input'), true);
+        
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            http_response_code(400);
+            echo json_encode(['error' => 'JSON inválido: ' . json_last_error_msg()]);
+            error_log('Erro ao decodificar JSON: ' . json_last_error_msg());
+            return;
+        }
+        
+        $title = $data['title'] ?? '';
+        $description = $data['description'] ?? null;
+        $status = $data['status'] ?? 'pendente';
+        $priority = $data['priority'] ?? 'media';
+        $dueDate = $data['due_date'] ?? null;
 
-    if (empty($title)) {
-        http_response_code(400);
-        echo json_encode(['error' => 'Título é obrigatório']);
-        return;
+        if (empty($title)) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Título é obrigatório']);
+            return;
+        }
+
+        // Verificar se a inserção foi bem-sucedida
+        $rowsAffected = $db->execute(
+            'INSERT INTO tasks (user_id, title, description, status, priority, due_date) VALUES (?, ?, ?, ?, ?, ?)',
+            [$userId, $title, $description, $status, $priority, $dueDate]
+        );
+
+        if ($rowsAffected === 0) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Falha ao inserir tarefa na base de dados']);
+            error_log('Erro: Nenhuma linha afetada ao inserir tarefa para user_id: ' . $userId);
+            return;
+        }
+
+        $taskId = $db->lastInsertId();
+        
+        if (!$taskId) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Falha ao obter ID da tarefa inserida']);
+            error_log('Erro: Não foi possível obter lastInsertId após inserir tarefa');
+            return;
+        }
+
+        $task = $db->fetchOne('SELECT * FROM tasks WHERE id = ?', [$taskId]);
+        
+        if (!$task) {
+            http_response_code(500);
+            echo json_encode(['error' => 'Tarefa criada mas não foi possível recuperá-la']);
+            error_log('Erro: Tarefa com ID ' . $taskId . ' não encontrada após inserção');
+            return;
+        }
+
+        // Adicionar log (não crítico - continuar mesmo se falhar)
+        try {
+            $user = $db->fetchOne('SELECT email FROM users WHERE id = ?', [$userId]);
+            if ($user) {
+                $db->execute(
+                    'INSERT INTO activity_logs (user_id, user_email, action, details) VALUES (?, ?, ?, ?)',
+                    [$userId, $user['email'], 'Criação de Tarefa', "Tarefa criada: $title"]
+                );
+            }
+        } catch (Exception $logError) {
+            // Log não crítico - apenas registrar erro mas continuar
+            error_log('Aviso: Erro ao inserir log de atividade: ' . $logError->getMessage());
+        }
+
+        http_response_code(201);
+        echo json_encode(['task' => $task]);
+        
+    } catch (Exception $e) {
+        http_response_code(500);
+        error_log('Erro ao criar tarefa: ' . $e->getMessage() . "\nStack trace: " . $e->getTraceAsString());
+        echo json_encode(['error' => 'Erro interno do servidor ao criar tarefa']);
     }
-
-    $db->execute(
-        'INSERT INTO tasks (user_id, title, description, status, priority, due_date) VALUES (?, ?, ?, ?, ?, ?)',
-        [$userId, $title, $description, $status, $priority, $dueDate]
-    );
-
-    $taskId = $db->lastInsertId();
-    $task = $db->fetchOne('SELECT * FROM tasks WHERE id = ?', [$taskId]);
-
-    // Adicionar log
-    $user = $db->fetchOne('SELECT email FROM users WHERE id = ?', [$userId]);
-    $db->execute(
-        'INSERT INTO activity_logs (user_id, user_email, action, details) VALUES (?, ?, ?, ?)',
-        [$userId, $user['email'], 'Criação de Tarefa', "Tarefa criada: $title"]
-    );
-
-    http_response_code(201);
-    echo json_encode(['task' => $task]);
 }
 
 function handleUpdateTask($id, $userId) {

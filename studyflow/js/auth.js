@@ -43,59 +43,115 @@ const Auth = {
 
   // Fazer login
   async login(email, password) {
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simular delay
+    try {
+      // Verificar se API está disponível
+      if (typeof window.API !== 'undefined' && window.API.login) {
+        // Usar API real
+        const result = await window.API.login(email, password);
+        
+        if (result.success && result.token) {
+          // Guardar token e utilizador
+          if (window.API.setToken) {
+            window.API.setToken(result.token);
+          }
+          if (result.user) {
+            localStorage.setItem('studyflow-user', JSON.stringify(result.user));
+          }
+          return true;
+        } else {
+          return false;
+        }
+      } else {
+        // Fallback: usar localStorage (modo offline/simulação)
+        await new Promise(resolve => setTimeout(resolve, 500)); // Simular delay
 
-    const users = this.getUsers();
-    const user = users.find(u => u.email === email && u.password === password);
-    
-    if (user) {
-      const { password: _, ...userWithoutPassword } = user;
-      localStorage.setItem('studyflow-user', JSON.stringify(userWithoutPassword));
-      
-      // Adicionar log de atividade
-      ActivityLog.add(user.id, user.email, 'Login', 'Usuário fez login no sistema');
-      
-      return true;
+        const users = this.getUsers();
+        const user = users.find(u => u.email === email && u.password === password);
+        
+        if (user) {
+          const { password: _, ...userWithoutPassword } = user;
+          localStorage.setItem('studyflow-user', JSON.stringify(userWithoutPassword));
+          
+          // Adicionar log de atividade
+          if (typeof ActivityLog !== 'undefined') {
+            ActivityLog.add(user.id, user.email, 'Login', 'Usuário fez login no sistema');
+          }
+          
+          return true;
+        }
+        
+        return false;
+      }
+    } catch (error) {
+      console.error('Erro ao fazer login:', error);
+      return false;
     }
-    
-    return false;
   },
 
   // Registrar novo usuário
   async register(name, email, password) {
-    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+      // Verificar se API está disponível
+      if (typeof window.API !== 'undefined' && window.API.register) {
+        // Usar API real
+        const result = await window.API.register(name, email, password);
+        
+        if (result.success && result.token) {
+          // Guardar token e utilizador
+          if (window.API.setToken) {
+            window.API.setToken(result.token);
+          }
+          if (result.user) {
+            localStorage.setItem('studyflow-user', JSON.stringify(result.user));
+          }
+          return { success: true, user: result.user };
+        } else {
+          return { success: false, error: result.error || 'Erro ao criar conta' };
+        }
+      } else {
+        // Fallback: usar localStorage (modo offline/simulação)
+        await new Promise(resolve => setTimeout(resolve, 500));
 
-    const users = this.getUsers();
-    
-    // Verificar se email já existe
-    if (users.some(u => u.email === email)) {
-      return { success: false, error: 'Este email já está cadastrado' };
+        const users = this.getUsers();
+        
+        // Verificar se email já existe
+        if (users.some(u => u.email === email)) {
+          return { success: false, error: 'Este email já está cadastrado' };
+        }
+
+        const newUser = {
+          id: Date.now().toString(),
+          name,
+          email,
+          password,
+          role: 'estudante',
+          createdAt: new Date().toISOString(),
+        };
+
+        const savedUsers = JSON.parse(localStorage.getItem('studyflow-users') || '[]');
+        savedUsers.push(newUser);
+        localStorage.setItem('studyflow-users', JSON.stringify(savedUsers));
+
+        // Fazer login automático
+        const { password: _, ...userWithoutPassword } = newUser;
+        localStorage.setItem('studyflow-user', JSON.stringify(userWithoutPassword));
+
+        // Adicionar log de atividade
+        if (typeof ActivityLog !== 'undefined') {
+          ActivityLog.add(newUser.id, email, 'Registro', 'Novo usuário registrado');
+        }
+        
+        // Simular envio de email
+        if (typeof EmailService !== 'undefined') {
+          EmailService.sendWelcomeEmail(email, name);
+        }
+
+        return { success: true };
+      }
+    } catch (error) {
+      console.error('Erro ao registar:', error);
+      return { success: false, error: error.message || 'Erro ao criar conta. Tente novamente.' };
     }
-
-    const newUser = {
-      id: Date.now().toString(),
-      name,
-      email,
-      password,
-      role: 'estudante',
-      createdAt: new Date().toISOString(),
-    };
-
-    const savedUsers = JSON.parse(localStorage.getItem('studyflow-users') || '[]');
-    savedUsers.push(newUser);
-    localStorage.setItem('studyflow-users', JSON.stringify(savedUsers));
-
-    // Fazer login automático
-    const { password: _, ...userWithoutPassword } = newUser;
-    localStorage.setItem('studyflow-user', JSON.stringify(userWithoutPassword));
-
-    // Adicionar log de atividade
-    ActivityLog.add(newUser.id, email, 'Registro', 'Novo usuário registrado');
-    
-    // Simular envio de email
-    EmailService.sendWelcomeEmail(email, name);
-
-    return { success: true };
   },
 
   // Fazer logout

@@ -22,6 +22,9 @@
           <ul class="navbar-nav">
             <li><a href="login.html" class="navbar-link">Entrar</a></li>
             <li><a href="register.html" class="btn btn-primary btn-sm">Registar</a></li>
+            <li><button class="theme-toggle" aria-label="Alternar tema" onclick="ThemeManager.toggleTheme()">
+              <span class="theme-icon">🌙</span>
+            </button></li>
           </ul>
         </nav>
       </div>
@@ -119,7 +122,14 @@
     </div>
   </footer>
 
+  <script src="js/theme.js"></script>
   <script src="js/auth.js"></script>
+  <script>
+    // Atualizar ícone do tema após carregar
+    if (typeof ThemeManager !== 'undefined') {
+      ThemeManager.updateThemeToggle();
+    }
+  </script>
 </body>
 </html>
 
