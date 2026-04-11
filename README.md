@@ -165,5 +165,7 @@ Os dados são armazenados localmente no navegador usando `localStorage`:
 - Sistema de recuperação de senha
 
 ## 📝 Licença
+2026 MP
+
 
 Este projeto é open source e está disponível sob a licença MIT.
